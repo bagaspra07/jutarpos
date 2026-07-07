@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FFFBF5;
+  --accent: #E8611A;
+  --text-main: #2D2D2D;
+  --text-muted: #6B7280;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-accent: var(--accent);
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-main);
+  font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom styles for touch targets */
+button, a {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+body {
+  overscroll-behavior-y: none; /* Disable pull-to-refresh on mobile */
+  user-select: none; /* Prevent text selection on long press for a more native feel */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Allow text selection in inputs and textareas */
+input, textarea {
+  user-select: text;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
