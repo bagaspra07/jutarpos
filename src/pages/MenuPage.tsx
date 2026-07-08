@@ -148,17 +148,30 @@ const MenuPage: React.FC = () => {
             <p className="text-slate-300 text-xs mt-1">Coba kata kunci lain atau pilih kategori yang berbeda</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filteredItems.map((item) => (
-              <div key={item.id} className="animate-in fade-in zoom-in-95 duration-500">
-                <MenuCard 
-                  item={item} 
-                  quantity={getCartQuantity(item.id)}
-                  onAdd={() => addItem({ menuItemId: item.id, menuItemName: item.name, menuItemPrice: item.price })}
-                  onUpdateQuantity={(newQty) => handleUpdateQuantity(item, newQty)}
-                />
-              </div>
-            ))}
+          <div className="space-y-8">
+            {(activeCategory === 'Semua' ? categories.filter(c => c !== 'Semua') : [activeCategory]).map((cat) => {
+              const itemsInCat = filteredItems.filter(item => item.category === cat);
+              if (itemsInCat.length === 0) return null;
+              return (
+                <div key={cat} className="space-y-4">
+                  <h2 className="text-base font-extrabold text-slate-800 border-l-4 border-slate-900 pl-2.5 tracking-tight">
+                    {cat}
+                  </h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {itemsInCat.map((item) => (
+                      <div key={item.id} className="animate-in fade-in zoom-in-95 duration-500">
+                        <MenuCard 
+                          item={item} 
+                          quantity={getCartQuantity(item.id)}
+                          onAdd={() => addItem({ menuItemId: item.id, menuItemName: item.name, menuItemPrice: item.price })}
+                          onUpdateQuantity={(newQty) => handleUpdateQuantity(item, newQty)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
