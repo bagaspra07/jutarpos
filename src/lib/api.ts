@@ -43,7 +43,8 @@ export const api = {
     if (itemErr) throw new Error(itemErr.message);
 
     const catMap = new Map(cats.map(c => [c.id, c.name]));
-    const formattedCategories = cats.map(c => c.name);
+    // Deduplicate category names (guard against stale duplicate rows in cloud)
+    const formattedCategories = [...new Set(cats.map(c => c.name))];
 
     const formattedItems = items.map(item => ({
       id: parseInt(item.local_id) || 0,
