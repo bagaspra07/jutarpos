@@ -161,7 +161,7 @@ const ConfirmationPage: React.FC = () => {
       {/* Actions */}
       <div className="px-6 mt-8 space-y-4">
         <button 
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/menu')}
           className="w-full py-4 bg-slate-900 text-white font-bold rounded-2xl shadow-xl shadow-slate-900/20 active:scale-[0.98] transition-all flex items-center justify-center text-lg"
         >
           Pesan Lagi

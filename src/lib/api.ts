@@ -26,6 +26,31 @@ export const api = {
     };
   },
   
+  getActiveSession: async (tableId: number) => {
+    const { data, error } = await supabase
+      .from('table_sessions')
+      .select('*')
+      .eq('table_id', String(tableId))
+      .eq('status', 'open')
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error) return null;
+    if (!data || data.length === 0) return null;
+    return data[0];
+  },
+
+  isSessionOpen: async (sessionId: string) => {
+    const { data, error } = await supabase
+      .from('table_sessions')
+      .select('status')
+      .eq('id', sessionId)
+      .single();
+
+    if (error || !data) return false;
+    return data.status === 'open';
+  },
+
   getMenu: async (category?: string) => {
     // 1. Fetch categories
     const { data: cats, error: catErr } = await supabase

@@ -70,7 +70,7 @@ export const useCartStore = create<CartState & CartActions>()(
     }),
     {
       name: 'jutar-cart-storage',
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

@@ -9,19 +9,70 @@ const WelcomePage: React.FC = () => {
   const setSession = useCartStore((state) => state.setSession);
   const setCustomerName = useCartStore((state) => state.setCustomerName);
 
+  const savedSessionId = useCartStore((state) => state.sessionId);
+  const savedTableId = useCartStore((state) => state.tableId);
+  const savedCustomerName = useCartStore((state) => state.customerName);
+
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // If tableId is not in URL, we can't proceed properly according to PRD
-  // but for development, we might default to table 1 or show a clear error.
   const tableId = tableIdParam ? parseInt(tableIdParam.replace('meja-', ''), 10) : null;
 
+  // Prefill name from storage
   useEffect(() => {
-    // If there is an active session, we might want to skip welcome
-    // But PRD says "scan QR -> buka web -> isi nama (opsional)"
-    // We'll let them re-enter or skip.
-  }, []);
+    if (savedCustomerName) {
+      setName(savedCustomerName);
+    }
+  }, [savedCustomerName]);
+
+  // Session detection & auto-join/redirect logic
+  useEffect(() => {
+    async function checkActiveSession() {
+      if (!tableId) return;
+
+      // 1. If we have a saved session for the SAME table in localStorage, check if it's still open
+      if (savedTableId === tableId && savedSessionId) {
+        setLoading(true);
+        try {
+          const isOpen = await api.isSessionOpen(savedSessionId);
+          if (isOpen) {
+            // Still active and valid. Redirect directly to menu!
+            navigate('/menu');
+            return;
+          }
+        } catch (err) {
+          console.error('Failed to check active session status:', err);
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      // 2. If table has changed or the saved session is closed, clear the old session/cart
+      if (savedTableId !== tableId || !savedSessionId) {
+        useCartStore.getState().clearCart();
+        // Reset session fields
+        useCartStore.setState({ sessionId: null, tableId: null, tableName: null });
+      }
+
+      // 3. Check if there's already an active open session in Supabase for this table
+      try {
+        const activeSession = await api.getActiveSession(tableId);
+        if (activeSession) {
+          // An active session exists! We automatically join it.
+          // If the customer already has their name saved, skip directly to menu
+          if (savedCustomerName) {
+            setSession(activeSession.id, tableId, `Meja ${tableId}`);
+            navigate('/menu');
+          }
+        }
+      } catch (err) {
+        console.error('Failed to look up active session:', err);
+      }
+    }
+
+    checkActiveSession();
+  }, [tableId, savedSessionId, savedTableId, savedCustomerName, navigate, setSession]);
 
   const handleStart = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,9 +85,21 @@ const WelcomePage: React.FC = () => {
     setError(null);
 
     try {
-      const session = await api.createSession(tableId, name || undefined);
+      // Check if there is already an active session in Supabase
+      const activeSession = await api.getActiveSession(tableId);
+      let sessId = '';
+      let tableNameVal = `Meja ${tableId}`;
+
+      if (activeSession) {
+        sessId = activeSession.id;
+      } else {
+        // Otherwise create a new session
+        const session = await api.createSession(tableId, name || undefined);
+        sessId = session.sessionId;
+        tableNameVal = session.tableName;
+      }
       
-      setSession(session.sessionId, tableId, session.tableName);
+      setSession(sessId, tableId, tableNameVal);
       if (name) setCustomerName(name);
       
       navigate('/menu');
