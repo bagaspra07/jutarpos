@@ -75,9 +75,9 @@ const MenuCard: React.FC<MenuCardProps> = ({ item, quantity, onAdd, onUpdateQuan
             ) : (
               <button 
                 onClick={onAdd}
-                className="bg-accent text-white w-9 h-9 rounded-2xl shadow-lg shadow-accent/20 active:scale-95 transition-all hover:bg-rose-700 flex items-center justify-center"
+                className="bg-accent text-white w-7 h-7 rounded-full shadow-md hover:bg-rose-700 active:scale-95 transition-all flex items-center justify-center"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
                 </svg>
               </button>

@@ -163,7 +163,7 @@ const MenuPage: React.FC = () => {
                         <MenuCard 
                           item={item} 
                           quantity={getCartQuantity(item.id)}
-                          onAdd={() => addItem({ menuItemId: item.id, menuItemName: item.name, menuItemPrice: item.price })}
+                          onAdd={() => addItem({ menuItemId: item.id, menuItemName: item.name, menuItemPrice: item.price, menuItemImageUrl: item.imageUrl })}
                           onUpdateQuantity={(newQty) => handleUpdateQuantity(item, newQty)}
                         />
                       </div>

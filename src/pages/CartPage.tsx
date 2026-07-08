@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../stores/cartStore';
 import CartItem from '../components/CartItem';
+import { api } from '../lib/api';
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,8 +17,21 @@ const CartPage: React.FC = () => {
     tableName
   } = useCartStore();
 
+  const [onlineSettings, setOnlineSettings] = useState({
+    service_charge_enabled: true,
+    service_charge_amount: 1000
+  });
+
+  useEffect(() => {
+    api.getOnlineSettings()
+      .then(setOnlineSettings)
+      .catch(() => {});
+  }, []);
+
   const subtotal = items.reduce((sum, item) => sum + (item.menuItemPrice * item.quantity), 0);
-  const serviceFee = items.length > 0 ? 1000 : 0;
+  const serviceFee = items.length > 0 && onlineSettings.service_charge_enabled 
+    ? Number(onlineSettings.service_charge_amount) 
+    : 0;
   const taxAmount = Math.floor(subtotal * 0.1);
   const total = subtotal + serviceFee + taxAmount;
 

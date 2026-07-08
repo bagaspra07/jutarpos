@@ -63,6 +63,7 @@ export interface CartItem {
   menuItemPrice: number
   quantity: number
   note: string | null
+  menuItemImageUrl?: string | null
 }
 
 export interface CartState {

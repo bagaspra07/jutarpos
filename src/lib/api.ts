@@ -195,11 +195,17 @@ export const api = {
     throw new Error('QRIS payment not supported in cashier payment mode.');
   },
   
-  getPaymentStatus: async (_orderId: number, _sessionId: string) => {
-    return {
-      orderId: _orderId,
-      paymentStatus: 'unpaid' as const,
-      paidAt: null
-    };
+  getOnlineSettings: async () => {
+    try {
+      const url = `${supabaseUrl}/storage/v1/object/public/menu-images/settings.json?t=${Date.now()}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Settings not found');
+      return await res.json();
+    } catch (err) {
+      return {
+        service_charge_enabled: true,
+        service_charge_amount: 1000
+      };
+    }
   }
 };
