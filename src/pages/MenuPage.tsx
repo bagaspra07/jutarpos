@@ -157,7 +157,7 @@ const MenuPage: React.FC = () => {
                   <h2 className="text-base font-extrabold text-slate-800 border-l-4 border-slate-900 pl-2.5 tracking-tight">
                     {cat}
                   </h2>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {itemsInCat.map((item) => (
                       <div key={item.id} className="animate-in fade-in zoom-in-95 duration-500">
                         <MenuCard 
