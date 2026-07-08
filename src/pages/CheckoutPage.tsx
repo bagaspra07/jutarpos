@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../stores/cartStore';
 import { api } from '../lib/api';
-import PaymentMethodCard from '../components/PaymentMethodCard';
-import QRISPanel from '../components/QRISPanel';
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
@@ -18,12 +16,9 @@ const CheckoutPage: React.FC = () => {
     clearCart 
   } = useCartStore();
 
-  const [paymentMethod, setPaymentMethod] = useState<'cashier' | 'qris'>('cashier');
   const [isOrderSummaryOpen, setIsOrderSummaryOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showQRIS, setShowQRIS] = useState(false);
-  const [createdOrderId, setCreatedOrderId] = useState<number | null>(null);
 
   const subtotal = items.reduce((sum, item) => sum + (item.menuItemPrice * item.quantity), 0);
   const serviceFee = items.length > 0 ? 1000 : 0;
@@ -48,7 +43,6 @@ const CheckoutPage: React.FC = () => {
     setError(null);
 
     try {
-      // 1. Create the order
       const orderData = {
         sessionId,
         items: items.map(item => ({
@@ -57,19 +51,12 @@ const CheckoutPage: React.FC = () => {
           note: item.note
         })),
         orderNote: orderNote || undefined,
-        paymentMethod
+        paymentMethod: 'cashier' as const
       };
 
       const result = await api.createOrder(orderData);
-
-      // 2. Handle navigation or QRIS
-      if (paymentMethod === 'cashier') {
-        clearCart();
-        navigate(`/confirmation/${result.orderNumber}`);
-      } else {
-        setCreatedOrderId(result.orderId);
-        setShowQRIS(true);
-      }
+      clearCart();
+      navigate(`/confirmation/${result.orderNumber}`);
     } catch (err: any) {
       setError(err.message || 'Gagal mengirim pesanan. Silakan coba lagi.');
     } finally {
@@ -77,31 +64,7 @@ const CheckoutPage: React.FC = () => {
     }
   };
 
-  if (showQRIS && createdOrderId) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col p-6 items-center justify-center">
-        <div className="w-full max-w-md">
-          <QRISPanel 
-            orderId={createdOrderId}
-            sessionId={sessionId || ''}
-            onPaymentConfirmed={() => {
-              // In a real app, we might verify with API first
-              // For now, clear cart and go to confirmation
-              const orderNumber = `JR-${new Date().toISOString().split('T')[0].replace(/-/g, '')}-${createdOrderId.toString().padStart(4, '0')}`;
-              clearCart();
-              navigate(`/confirmation/${orderNumber}?method=qris`);
-            }}
-          />
-          <button 
-            onClick={() => setShowQRIS(false)}
-            className="w-full mt-6 py-2 text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors"
-          >
-            Kembali ke Pembayaran
-          </button>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -172,35 +135,19 @@ const CheckoutPage: React.FC = () => {
           />
         </div>
 
-        {/* Payment Methods */}
+        {/* Payment Method Info */}
         <div className="mb-6">
-          <h3 className="font-bold text-slate-900 mb-4 ml-1 uppercase text-xs tracking-widest text-slate-400">Pilih Cara Bayar</h3>
-          
-          <PaymentMethodCard 
-            id="cashier"
-            title="Bayar ke Kasir"
-            description="Lakukan pembayaran langsung di kasir restoran"
-            icon={(
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="bg-orange-50 border border-orange-100 rounded-3xl p-5 flex items-start gap-4">
+            <div className="w-10 h-10 bg-accent rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-accent/20 text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-            )}
-            selected={paymentMethod === 'cashier'}
-            onClick={() => setPaymentMethod('cashier')}
-          />
-
-          <PaymentMethodCard 
-            id="qris"
-            title="Bayar via QRIS"
-            description="Bayar langsung menggunakan e-wallet (OVO, GoPay, dll)"
-            icon={(
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m0 11v1m5-4h1m-11 0h1m11.364-7.364l-.707.707m-11.314 11.314l-.707.707m0-11.314l.707.707m11.314 11.314l.707.707M12 5a7 7 0 100 14 7 7 0 000-14z" />
-              </svg>
-            )}
-            selected={paymentMethod === 'qris'}
-            onClick={() => setPaymentMethod('qris')}
-          />
+            </div>
+            <div>
+              <p className="font-black text-sm text-orange-900 mb-1">Bayar di Kasir</p>
+              <p className="text-xs text-orange-700/80 leading-relaxed">Setelah pesanan dikirim, silakan menuju ke kasir untuk melakukan pembayaran. Tunjukkan nomor pesanan Anda kepada kasir.</p>
+            </div>
+          </div>
         </div>
 
         {/* Error Message */}
@@ -242,7 +189,7 @@ const CheckoutPage: React.FC = () => {
             </svg>
           ) : (
             <>
-              {paymentMethod === 'cashier' ? 'Kirim Pesanan' : 'Generate QR Code'}
+              Kirim Pesanan
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>

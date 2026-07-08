@@ -82,19 +82,21 @@ export const api = {
 
     if (sErr) throw new Error(sErr.message);
 
-    // 2. Fetch all menu items from Supabase to match the local names
+    // 2. Fetch all menu items from Supabase to match the local names and prices
     const { data: menuItems, error: mErr } = await supabase
       .from('menu_snapshot_items')
-      .select('local_id, name');
+      .select('local_id, name, price');
 
     if (mErr) throw new Error(mErr.message);
 
     const nameMap = new Map(menuItems.map(m => [parseInt(m.local_id), m.name]));
+    const priceMap = new Map(menuItems.map(m => [parseInt(m.local_id), parseFloat(m.price) || 0]));
 
     // 3. Map order items
     const requestItems = orderData.items.map(item => ({
       menu_item_local_id: String(item.menuItemId),
       name: nameMap.get(item.menuItemId) || 'Menu Item',
+      price: priceMap.get(item.menuItemId) || 0,
       qty: item.quantity,
       notes: item.note || ''
     }));
